@@ -1,1122 +1,456 @@
-Lost and Found Microservices Performance Experiment
-
-===================================================
-
-
-
-1\. Project Overview
-
-\-------------------
-
-
-
-This project demonstrates the development, deployment, and performance analysis of a containerized microservice-based Lost and Found application.
-
-
-
-The existing Lost and Found application is divided into three independent microservices based on their responsibilities:
-
-
-
-1\. User Service
-
-2\. Item Service
-
-3\. Handover Service
-
-
-
-Each microservice is implemented as an independent PHP application and containerized using Docker. Docker Compose is used to build, deploy, and manage all three services.
-
-
-
-The experiment evaluates the performance of the application under different concurrent workloads by measuring response time, throughput, failed requests, CPU utilization, and memory utilization.
-
-
-
-
-
-2\. Objectives
-
-\-------------
-
-
-
-The objectives of the experiment are:
-
-
-
-\- To divide the Lost and Found application into independent microservices.
-
-\- To implement REST API endpoints for the individual services.
-
-\- To containerize each microservice using Docker.
-
-\- To deploy the services using Docker Compose.
-
-\- To establish communication between services through a Docker network.
-
-\- To verify end-to-end communication between multiple services.
-
-\- To evaluate application performance under varying workloads.
-
-\- To measure response time and throughput.
-
-\- To monitor CPU and memory utilization.
-
-\- To analyze the effect of increasing concurrent workloads on system performance.
-
-
-
-
-
-3\. Microservice Architecture
-
-\----------------------------
-
-
-
-The application consists of three independent services.
-
-
-
-
-
-3.1 User Service
-
-\----------------
-
-
-
-Responsibility:
-
-
-
-Handles user-related functionality and provides the User Service REST API.
-
-
-
-Container:
-
-
-
-lostfound-user
-
-
-
-Host Port:
-
-
-
-8081
-
-
-
-API Endpoint:
-
-
-
-http://localhost:8081/
-
-
-
-
-
-3.2 Item Service
-
-\----------------
-
-
-
-Responsibility:
-
-
-
-Handles lost and found item-related functionality and provides the Item Service REST API.
-
-
-
-The Item Service also communicates with the User Service and Handover Service through the Docker network.
-
-
-
-Container:
-
-
-
-lostfound-item
-
-
-
-Host Port:
-
-
-
-8082
-
-
-
-API Endpoint:
-
-
-
-http://localhost:8082/
-
-
-
-
-
-3.3 Handover Service
-
-\--------------------
-
-
-
-Responsibility:
-
-
-
-Handles the handover and return process and provides the Handover Service REST API.
-
-
-
-Container:
-
-
-
-lostfound-handover
-
-
-
-Host Port:
-
-
-
-8083
-
-
-
-API Endpoint:
-
-
-
-http://localhost:8083/
-
-
-
-
-
-4\. Technology Stack
-
-\-------------------
-
-
-
-Programming Language:
-
-
-
-PHP 8.2
-
-
-
-Web Server:
-
-
-
-Apache
-
-
-
-Containerization:
-
-
-
-Docker
-
-
-
-Container Orchestration:
-
-
-
-Docker Compose
-
-
-
-Workload Testing:
-
-
-
-ApacheBench
-
-
-
-Performance Monitoring:
-
-
-
-Docker Stats
-
-
-
-Data Processing and Graph Generation:
-
-
-
-Python and Matplotlib
-
-
-
-Operating Environment:
-
-
-
-Windows with XAMPP and Docker Desktop
-
-
-
-
-
-5\. Project Structure
-
-\--------------------
-
-
-
+# Lost and Found Microservices Performance Analysis
+
+A containerized Lost and Found application developed as a three-microservice system and evaluated under varying workloads.
+
+## Project Overview
+
+The application is divided into three independent services:
+
+| Microservice | Responsibility | Host Port |
+|---|---|---:|
+| User Service | User-related operations | 8081 |
+| Item Service | Lost and found item operations | 8082 |
+| Handover Service | Item handover and return operations | 8083 |
+
+Docker is used for containerization and Docker Compose is used to deploy the complete application. The three services communicate through a common Docker bridge network.
+
+The Item Service is used as the main endpoint for workload testing.
+
+## Architecture
+
+```text
+                         Client
+                           |
+                           v
+                    +--------------+
+                    | Item Service |
+                    |    :8082     |
+                    +--------------+
+                      /          \
+                     /            \
+                    v              v
+          +---------------+   +------------------+
+          | User Service  |   | Handover Service |
+          |     :8081     |   |      :8083       |
+          +---------------+   +------------------+
+                    \              /
+                     \            /
+                      +----------+
+                      |  Docker  |
+                      |  Network |
+                      +----------+
+```
+
+The Item Service communicates with the other services using Docker service names:
+
+```text
+http://user-service/
+http://handover-service/
+```
+
+This avoids using localhost for communication between containers.
+
+## Technologies
+
+| Technology | Purpose |
+|---|---|
+| PHP 8.2 | Microservice implementation |
+| Apache | Web server |
+| Docker | Containerization |
+| Docker Compose | Multi-container deployment |
+| Docker Bridge Network | Inter-service communication |
+| ApacheBench | Workload generation |
+| Python | Result processing |
+| Pandas | Result data handling |
+| Matplotlib | Graph generation |
+| Git | Version control |
+| GitHub | Repository hosting |
+
+## Project Structure
+
+```text
 lostfound-microservices/
+│
+├── docker-compose.yml
+├── generate_graphs.py
+├── README.md
+│
+├── user-service/
+│   ├── Dockerfile
+│   └── index.php
+│
+├── item-service/
+│   ├── Dockerfile
+│   └── index.php
+│
+├── handover-service/
+│   ├── Dockerfile
+│   └── index.php
+│
+└── results/
+    ├── workload_results.csv
+    ├── response_time.png
+    ├── throughput.png
+    ├── cpu_utilization.png
+    └── memory_utilization.png
+```
 
+## Microservice Implementation
 
+### User Service
 
-&#x20;   docker-compose.yml
+The User Service provides a REST endpoint for user-service verification.
 
+```text
+GET http://localhost:8081/
+```
 
+Example response:
 
-&#x20;   generate\_graphs.py
+```json
+{
+  "service": "User Service",
+  "status": "running",
+  "message": "User service is working"
+}
+```
 
+### Item Service
 
+The Item Service is the main service used for the experiment. It also demonstrates inter-service communication by contacting the User Service and Handover Service.
 
-&#x20;   README.md
+```text
+GET http://localhost:8082/
+```
 
+### Handover Service
 
+The Handover Service provides a REST endpoint for handover-service verification.
 
-&#x20;   user-service/
+```text
+GET http://localhost:8083/
+```
 
-&#x20;       Dockerfile
+Example response:
 
-&#x20;       index.php
+```json
+{
+  "service": "Handover Service",
+  "status": "running",
+  "message": "Handover service is working"
+}
+```
 
-
-
-&#x20;   item-service/
-
-&#x20;       Dockerfile
-
-&#x20;       index.php
-
-
-
-&#x20;   handover-service/
-
-&#x20;       Dockerfile
-
-&#x20;       index.php
-
-
-
-&#x20;   results/
-
-&#x20;       workload\_results.csv
-
-&#x20;       response\_time.png
-
-&#x20;       throughput.png
-
-&#x20;       cpu\_utilization.png
-
-&#x20;       memory\_utilization.png
-
-
-
-
-
-6\. Docker Configuration
-
-\-----------------------
-
-
+## Docker Configuration
 
 Each microservice has its own Dockerfile.
 
+```dockerfile
+FROM php:8.2-apache
 
+COPY index.php /var/www/html/index.php
 
-The services use the PHP 8.2 Apache base image.
+EXPOSE 80
+```
 
+The three services are deployed using Docker Compose.
 
+| Service | Container Name | Host Port | Container Port |
+|---|---|---:|---:|
+| User Service | lostfound-user | 8081 | 80 |
+| Item Service | lostfound-item | 8082 | 80 |
+| Handover Service | lostfound-handover | 8083 | 80 |
 
-Each Dockerfile copies the corresponding service application into the Apache document root and exposes port 80 inside the container.
+All three containers are connected to the Docker network:
 
-
-
-The host ports are mapped as follows:
-
-
-
-User Service:
-
-
-
-8081 -> 80
-
-
-
-Item Service:
-
-
-
-8082 -> 80
-
-
-
-Handover Service:
-
-
-
-8083 -> 80
-
-
-
-
-
-7\. Docker Compose Configuration
-
-\-------------------------------
-
-
-
-Docker Compose is used to build and deploy all three services.
-
-
-
-The services are connected to a common Docker bridge network named:
-
-
-
+```text
 lostfound-network
+```
 
+## Deployment
 
+Start the complete application with:
 
-The Docker Compose configuration provides:
-
-
-
-\- Independent containers for each service
-
-\- Port mapping for external access
-
-\- A common network for inter-service communication
-
-\- Independent service deployment
-
-
-
-
-
-8\. Building and Deploying the Application
-
-\------------------------------------------
-
-
-
-Navigate to the project directory:
-
-
-
-&#x20;   cd C:\\xampp2\\htdocs\\lostfound-microservices
-
-
-
-Build the Docker images:
-
-
-
-&#x20;   docker compose build
-
-
-
-Start the services:
-
-
-
-&#x20;   docker compose up -d
-
-
+```powershell
+docker compose up -d
+```
 
 Verify the running containers:
 
-
-
-&#x20;   docker ps
-
-
+```powershell
+docker ps
+```
 
 The expected containers are:
 
+```text
+lostfound-user
+lostfound-item
+lostfound-handover
+```
 
+Stop the application with:
 
-&#x20;   lostfound-user
+```powershell
+docker compose down
+```
 
-&#x20;   lostfound-item
+## REST API Verification
 
-&#x20;   lostfound-handover
+The three services can be accessed independently:
 
+| Service | Endpoint |
+|---|---|
+| User Service | http://localhost:8081/ |
+| Item Service | http://localhost:8082/ |
+| Handover Service | http://localhost:8083/ |
 
+## Inter-Service Communication
 
+The Item Service performs requests to:
 
+```text
+http://user-service/
+http://handover-service/
+```
 
-9\. REST API Verification
+The final Item Service response contains the responses received from both services.
 
-\------------------------
+Example:
 
+```json
+{
+  "service": "Item Service",
+  "status": "running",
+  "message": "Item service successfully communicated with other services",
+  "user_service": {
+    "service": "User Service",
+    "status": "running",
+    "message": "User service is working"
+  },
+  "handover_service": {
+    "service": "Handover Service",
+    "status": "running",
+    "message": "Handover service is working"
+  }
+}
+```
 
+This confirms communication between the microservices through the Docker network.
 
-The individual services can be tested using a web browser or an API client.
+## Workload Testing Method
 
+ApacheBench was used to generate workload against the Item Service.
 
+Test endpoint:
 
-User Service:
+```text
+http://localhost:8082/
+```
 
+Command format:
 
+```powershell
+& "C:\xampp2\apache\bin\ab.exe" -n 100 -c <concurrency> http://localhost:8082/
+```
 
-&#x20;   http://localhost:8081/
+Each workload used 100 total requests.
 
+The tested concurrency levels were:
 
+| Workload | Concurrent Requests |
+|---|---:|
+| W1 | 1 |
+| W2 | 2 |
+| W3 | 4 |
+| W4 | 8 |
+| W5 | 16 |
 
-Item Service:
+Docker resource utilization was observed using Docker statistics during the workload tests.
 
+## Measured Performance Results
 
+The following values are the measured results from the experiment.
 
-&#x20;   http://localhost:8082/
+| Concurrent Requests | Avg Response Time (ms) | Throughput (req/s) | Failed Requests |
+|---:|---:|---:|---:|
+| 1 | 4.817 | 207.59 | 0 |
+| 2 | 4.724 | 423.35 | 0 |
+| 4 | 6.332 | 631.76 | 0 |
+| 8 | 14.116 | 566.73 | 0 |
+| 16 | 24.594 | 650.55 | 0 |
 
+## Container Resource Measurements
 
+| Concurrent Requests | Item CPU (%) | Item Memory (MiB) | Handover CPU (%) | Handover Memory (MiB) | User CPU (%) | User Memory (MiB) |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0.00 | 16.72 | 0.01 | 18.84 | 0.01 | 16.17 |
+| 2 | 0.01 | 16.26 | 0.01 | 19.08 | 0.01 | 16.90 |
+| 4 | 0.01 | 16.41 | 0.01 | 19.55 | 0.01 | 17.39 |
+| 8 | 0.01 | 16.57 | 0.01 | 20.27 | 0.01 | 17.61 |
+| 16 | 0.01 | 16.51 | 0.01 | 20.50 | 0.01 | 18.08 |
 
-Handover Service:
+## Performance Visualizations
 
+### Average Response Time
 
+The response-time graph shows the measured average response time for each concurrency level.
 
-&#x20;   http://localhost:8083/
+![Concurrent Requests vs Average Response Time](results/response_time.png)
 
+### Throughput
 
+The throughput graph shows the measured number of requests processed per second at each concurrency level.
 
+![Concurrent Requests vs Throughput](results/throughput.png)
 
+### CPU Utilization
 
-10\. Inter-Service Communication
+The CPU graph compares the measured CPU utilization of the three containers.
 
-\-------------------------------
+![Concurrent Requests vs CPU Utilization](results/cpu_utilization.png)
 
+### Memory Utilization
 
+The memory graph compares memory usage across the three containers.
 
-The services communicate through the Docker bridge network.
+![Concurrent Requests vs Memory Utilization](results/memory_utilization.png)
 
+## Result Analysis
 
+### Response Time
 
-The Item Service communicates with the User Service and Handover Service using Docker Compose service names rather than localhost.
+The average response time was low at the lower concurrency levels. It increased noticeably as the workload increased, reaching 24.594 ms at 16 concurrent requests.
 
+| Concurrent Requests | Response Time |
+|---:|---:|
+| 1 | 4.817 ms |
+| 2 | 4.724 ms |
+| 4 | 6.332 ms |
+| 8 | 14.116 ms |
+| 16 | 24.594 ms |
 
+The measurements show a clear increase in response time at higher concurrency.
 
-The communication is implemented using:
+### Throughput
 
+Throughput increased from 207.59 req/s at one concurrent request to 631.76 req/s at four concurrent requests.
 
+At eight concurrent requests, the measured throughput was 566.73 req/s. At sixteen concurrent requests, it increased to 650.55 req/s.
 
-&#x20;   http://user-service/
+The variation demonstrates that throughput does not necessarily increase linearly with concurrency.
 
+### Failed Requests
 
+No failed requests were recorded at any of the five tested workload levels.
 
-and:
+| Concurrent Requests | Failed Requests |
+|---:|---:|
+| 1 | 0 |
+| 2 | 0 |
+| 4 | 0 |
+| 8 | 0 |
+| 16 | 0 |
 
+### CPU Utilization
 
+CPU utilization remained very low throughout the experiment.
 
-&#x20;   http://handover-service/
+The recorded values were approximately 0.00–0.01% for the three services during the captured Docker statistics measurements.
 
+### Memory Utilization
 
+Memory usage remained relatively stable across the tested workloads.
 
-The end-to-end request flow is:
+At 16 concurrent requests:
 
+| Service | Memory Usage |
+|---|---:|
+| Item Service | 16.51 MiB |
+| Handover Service | 20.50 MiB |
+| User Service | 18.08 MiB |
 
+The Handover Service recorded the highest memory utilization in the measured observations.
 
-&#x20;   Client
+## Result Files
 
-&#x20;      |
+The complete measured dataset is stored in:
 
-&#x20;      v
+```text
+results/workload_results.csv
+```
 
-&#x20;   Item Service
+The generated visualizations are:
 
-&#x20;      |
+```text
+results/response_time.png
+results/throughput.png
+results/cpu_utilization.png
+results/memory_utilization.png
+```
 
-&#x20;      +----------------> User Service
+## Graph Generation
 
-&#x20;      |
+The graphs are generated using:
 
-&#x20;      +----------------> Handover Service
+```text
+generate_graphs.py
+```
 
+The script processes the workload CSV using Pandas and creates the four performance visualizations using Matplotlib.
 
+To regenerate the graphs:
 
-When the Item Service is accessed, it sends requests to the User Service and Handover Service and includes their responses in the resulting JSON response.
+```powershell
+python generate_graphs.py
+```
 
-
-
-The communication was successfully verified through an end-to-end API request.
-
-
-
-
-
-11\. Workload Testing Methodology
-
-\--------------------------------
-
-
-
-ApacheBench was used to generate controlled workloads against the Item Service.
-
-
-
-The command format used was:
-
-
-
-&#x20;   ab -n 100 -c <concurrency> http://localhost:8082/
-
-
-
-Where:
-
-
-
-&#x20;   -n 100
-
-
-
-represents the total number of requests.
-
-
-
-&#x20;   -c
-
-
-
-represents the number of concurrent requests.
-
-
-
-Five workload levels were evaluated:
-
-
-
-&#x20;   1 concurrent request
-
-&#x20;   2 concurrent requests
-
-&#x20;   4 concurrent requests
-
-&#x20;   8 concurrent requests
-
-&#x20;   16 concurrent requests
-
-
-
-For each workload level, the following measurements were recorded:
-
-
-
-\- Average response time
-
-\- Throughput
-
-\- Failed requests
-
-\- CPU utilization
-
-\- Memory utilization
-
-
-
-
-
-12\. Resource Monitoring
-
-\-----------------------
-
-
-
-Docker container resource utilization was measured using:
-
-
-
-&#x20;   docker stats --no-stream
-
-
-
-The following metrics were recorded for each service:
-
-
-
-\- CPU utilization
-
-\- Memory utilization
-
-
-
-Measurements were collected for:
-
-
-
-\- User Service
-
-\- Item Service
-
-\- Handover Service
-
-
-
-
-
-13\. Performance Results
-
-\-----------------------
-
-
-
-The measured performance results are shown below.
-
-
-
-| Concurrent Requests | Average Response Time (ms) | Throughput (req/s) | Failed Requests |
-
-|---------------------|-----------------------------|--------------------|-----------------|
-
-| 1                   | 4.817                       | 207.59             | 0               |
-
-| 2                   | 4.724                       | 423.35             | 0               |
-
-| 4                   | 6.332                       | 631.76             | 0               |
-
-| 8                   | 14.116                      | 566.73             | 0               |
-
-| 16                  | 24.594                     | 650.55             | 0               |
-
-
-
-
-
-14\. Resource Utilization Results
-
-\--------------------------------
-
-
-
-The recorded CPU and memory utilization values are shown below.
-
-
-
-| Concurrent Requests | Item CPU | Item Memory | Handover CPU | Handover Memory | User CPU | User Memory |
-
-|---------------------|----------|-------------|--------------|-----------------|----------|-------------|
-
-| 1                   | 0.00%    | 16.72 MiB   | 0.01%        | 18.84 MiB       | 0.01%    | 16.17 MiB   |
-
-| 2                   | 0.01%    | 16.26 MiB   | 0.01%        | 19.08 MiB       | 0.01%    | 16.90 MiB   |
-
-| 4                   | 0.01%    | 16.41 MiB   | 0.01%        | 19.55 MiB       | 0.01%    | 17.39 MiB   |
-
-| 8                   | 0.01%    | 16.57 MiB   | 0.01%        | 20.27 MiB       | 0.01%    | 17.61 MiB   |
-
-| 16                  | 0.01%    | 16.51 MiB   | 0.01%        | 20.50 MiB       | 0.01%    | 18.08 MiB   |
-
-
-
-
-
-15\. Performance Analysis
-
-\------------------------
-
-
-
-The workload measurements show that average response time generally increased as the number of concurrent requests increased.
-
-
-
-At one concurrent request, the average response time was 4.817 ms. At sixteen concurrent requests, it increased to 24.594 ms.
-
-
-
-Throughput increased from 207.59 requests per second at one concurrent request to 631.76 requests per second at four concurrent requests.
-
-
-
-At eight concurrent requests, throughput decreased to 566.73 requests per second while response time increased to 14.116 ms.
-
-
-
-At sixteen concurrent requests, throughput increased again to 650.55 requests per second. However, the average response time also increased to 24.594 ms.
-
-
-
-No failed requests were recorded at any of the tested workload levels.
-
-
-
-The CPU utilization observed in the Docker statistics remained between 0.00% and 0.01% for the three services during the recorded measurements.
-
-
-
-Memory utilization showed a gradual increase with workload. The Handover Service recorded the highest memory usage among the three services, reaching 20.50 MiB at sixteen concurrent requests.
-
-
-
-
-
-16\. Performance Graphs
-
-\----------------------
-
-
-
-The following graphs were generated from the measured workload data.
-
-
-
-
-
-16.1 Concurrent Requests vs Average Response Time
-
-\-------------------------------------------------
-
-
-
-!\[Concurrent Requests vs Average Response Time](results/response\_time.png)
-
-
-
-The graph shows the relationship between the number of concurrent requests and the average response time.
-
-
-
-
-
-16.2 Concurrent Requests vs Throughput
-
-\--------------------------------------
-
-
-
-!\[Concurrent Requests vs Throughput](results/throughput.png)
-
-
-
-The graph shows the throughput achieved at different workload levels.
-
-
-
-
-
-16.3 Concurrent Requests vs CPU Utilization
-
-\-------------------------------------------
-
-
-
-!\[Concurrent Requests vs CPU Utilization](results/cpu\_utilization.png)
-
-
-
-The graph compares CPU utilization of the User Service, Item Service, and Handover Service under different workload levels.
-
-
-
-
-
-16.4 Concurrent Requests vs Memory Utilization
-
-\----------------------------------------------
-
-
-
-!\[Concurrent Requests vs Memory Utilization](results/memory\_utilization.png)
-
-
-
-The graph compares memory utilization of the User Service, Item Service, and Handover Service under different workload levels.
-
-
-
-
-
-17\. Result Data
-
-\---------------
-
-
-
-The complete measured workload data is stored in:
-
-
-
-&#x20;   results/workload\_results.csv
-
-
-
-The CSV file contains:
-
-
-
-\- Concurrent requests
-
-\- Response time
-
-\- Throughput
-
-\- Failed requests
-
-\- Item Service CPU utilization
-
-\- Item Service memory utilization
-
-\- Handover Service CPU utilization
-
-\- Handover Service memory utilization
-
-\- User Service CPU utilization
-
-\- User Service memory utilization
-
-
-
-
-
-18\. Graph Generation
-
-\--------------------
-
-
-
-The graphs are generated using the Python script:
-
-
-
-&#x20;   generate\_graphs.py
-
-
-
-Run the script using:
-
-
-
-&#x20;   python generate\_graphs.py
-
-
-
-The script reads:
-
-
-
-&#x20;   results/workload\_results.csv
-
-
-
-and generates the following graphs inside the results directory:
-
-
-
-&#x20;   response\_time.png
-
-&#x20;   throughput.png
-
-&#x20;   cpu\_utilization.png
-
-&#x20;   memory\_utilization.png
-
-
-
-
-
-19\. Experimental Observations
-
-\-----------------------------
-
-
-
-The experiment demonstrates that the containerized microservice application successfully handled all five tested workload levels without request failures.
-
-
-
-As concurrency increased, the average response time generally increased.
-
-
-
-Throughput increased significantly from one to four concurrent requests and showed variation at higher workload levels.
-
-
-
-Memory usage increased gradually with workload.
-
-
-
-The Handover Service recorded the highest memory utilization among the three services during the recorded measurements.
-
-
-
-The observed CPU utilization remained very low for all three services in the recorded Docker statistics.
-
-
-
-
-
-20\. Conclusion
-
-\--------------
-
-
-
-The Lost and Found application was successfully structured as a three-service microservice application consisting of the User Service, Item Service, and Handover Service.
-
-
-
-Each service was independently containerized using Docker and deployed using Docker Compose.
-
-
-
-A common Docker network was established to enable communication between the services. Inter-service communication was successfully demonstrated by allowing the Item Service to communicate with both the User Service and Handover Service using Docker service names.
-
-
-
-The application was evaluated using five workload levels ranging from one to sixteen concurrent requests. Response time, throughput, failed requests, CPU utilization, and memory utilization were measured.
-
-
-
-The results demonstrate the effect of increasing workload on application response time, throughput, and memory utilization.
-
-
-
-All tested requests completed successfully, with zero failed requests across the five workload levels.
-
-
-
-
-
-21\. Project Deliverables
-
-\-----------------------
-
-
-
-The project contains:
-
-
-
-\- Three independent microservices
-
-\- Three Dockerfiles
-
-\- Docker Compose configuration
-
-\- REST API endpoints
-
-\- Docker network configuration
-
-\- Inter-service communication
-
-\- Workload testing results
-
-\- CPU and memory observations
-
-\- Processed CSV results
-
-\- Performance graphs
-
-\- Performance analysis
-
-\- Experimental conclusion
-
-
-
-
-
-22\. Verification Commands
-
-\-------------------------
-
-
-
-Check Docker version:
-
-
-
-&#x20;   docker --version
-
-
-
-Check Docker Compose:
-
-
-
-&#x20;   docker compose version
-
-
-
-Build services:
-
-
-
-&#x20;   docker compose build
-
-
-
-Start services:
-
-
-
-&#x20;   docker compose up -d
-
-
+## Verification Commands
 
 Check running containers:
 
+```powershell
+docker ps
+```
 
+Check Docker images:
 
-&#x20;   docker ps
-
-
+```powershell
+docker images
+```
 
 Check Docker networks:
 
+```powershell
+docker network ls
+```
 
+Start the application:
 
-&#x20;   docker network ls
+```powershell
+docker compose up -d
+```
 
+Stop the application:
 
+```powershell
+docker compose down
+```
 
-Monitor container resources:
+## Experiment Outcome
 
+The three microservices were developed and independently containerized. Docker Compose was used to deploy the complete application, and a shared Docker network enabled communication between the services.
 
+The Item Service successfully communicated with both the User Service and Handover Service using Docker service names.
 
-&#x20;   docker stats --no-stream
+Five workload levels were evaluated using ApacheBench. Response time, throughput, failed requests, CPU utilization, and memory utilization were recorded for the experiment.
 
+The measurements show that response time generally increases as concurrency increases. Throughput increased at lower workload levels and varied at higher concurrency. No failed requests were observed during the tested workloads. CPU utilization remained very low, while memory utilization remained comparatively stable.
 
+The experiment therefore demonstrates the complete process of developing, containerizing, deploying, connecting, load testing, monitoring, and analyzing a containerized microservice application.
 
-Run a workload test:
+## Repository
 
+GitHub:
 
-
-&#x20;   C:\\xampp2\\apache\\bin\\ab.exe -n 100 -c 1 http://localhost:8082/
-
-
-
-Generate performance graphs:
-
-
-
-&#x20;   python generate\_graphs.py
-
+https://github.com/sunayanakamat04/lostfound-microservices
