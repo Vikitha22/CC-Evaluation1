@@ -24,9 +24,6 @@ The new implementation is located in `fastapi-services/` and provides REST APIs,
 
 The existing PHP implementation and previous performance results are preserved.
 
-## Architecture
-
-![Lost and Found Microservices Architecture](architecture.png)
 
 ### FastAPI Service Flow
 
